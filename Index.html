@@ -1,0 +1,159 @@
+# building-lease-preview
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Building Lease Manager</title>
+<style>
+*{box-sizing:border-box}
+body{margin:0;font-family:Arial,sans-serif;background:#eef3f5;color:#193747}
+header{background:#154d50;color:white;padding:24px 18px}
+h1{font-size:23px;margin:12px 0}
+h2{font-size:19px}
+button{font:inherit;cursor:pointer}
+header button{float:right;background:white;color:#154d50;border:0;
+padding:8px;border-radius:8px}
+main{max-width:650px;margin:auto;padding:18px 18px 90px}
+.notice{background:#fff0cc;padding:12px;border-radius:10px;font-size:13px}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:16px}
+.card{background:white;padding:18px;border-radius:14px;margin:12px 0}
+.grid .card{margin:0}
+.number{font-size:28px;margin:12px 0}
+small{color:#607580}
+.action{background:#14796d;color:white;border:0;padding:13px;
+border-radius:9px;width:100%;margin-top:10px}
+.floor{display:block;width:100%;text-align:left;background:white;
+color:#193747;border:0;border-radius:12px;padding:20px;margin:12px 0}
+nav{position:fixed;bottom:0;left:0;right:0;background:white;
+display:flex;justify-content:center;border-top:1px solid #ddd;padding:12px}
+nav button{border:0;background:white;color:#176b62;padding:12px}
+p{line-height:1.5}
+</style>
+</head>
+<body>
+<header>
+<button onclick="am=!am;render()">English / አማርኛ</button>
+<br>
+<h1 id="title"></h1>
+<div id="subtitle"></div>
+</header>
+<main id="content"></main>
+<nav id="nav"></nav>
+
+<script>
+let am=false, page="home", paid=false;
+const t=(en,ah)=>am?ah:en;
+
+function go(p){
+  page=p;
+  render();
+  window.scrollTo(0,0);
+}
+
+function render(){
+  document.documentElement.lang=am?"am":"en";
+  document.getElementById("title").textContent=
+    t("Building Lease Manager","የሕንፃ ኪራይ አስተዳዳሪ");
+  document.getElementById("subtitle").textContent=
+    t("Shops and offices · ETB","ሱቆች እና ቢሮዎች · ብር");
+
+  let body=`<div class="notice">${
+    t("PREVIEW — Fictional records. Changes are not saved.",
+      "ማሳያ — ምሳሌ መረጃ። ለውጦች አይቀመጡም።")
+  }</div>`;
+
+  if(page==="home"){
+    body+=`
+    <h2>${t("Overview","አጠቃላይ እይታ")}</h2>
+    <div class="grid">
+      <div class="card">
+        <small>${t("Floors","ወለሎች")}</small>
+        <div class="number">6</div>
+      </div>
+      <div class="card">
+        <small>${t("Sample units","የማሳያ ክፍሎች")}</small>
+        <div class="number">7</div>
+      </div>
+    </div>
+    <div class="card">
+      <small>${t("Outstanding rent","ያልተከፈለ ኪራይ")}</small>
+      <div class="number">ETB ${paid?"0":"120,000"}</div>
+      <p>${t("Sample Trading · Shop G-01",
+             "Sample Trading · ሱቅ G-01")}</p>
+      <button class="action" onclick="go('lease')">
+        ${t("View lease","ውሉን ይመልከቱ")}
+      </button>
+    </div>`;
+  }
+
+  if(page==="floors"){
+    body+=`<h2>${t("Floors","ወለሎች")}</h2>`;
+    for(let f=0;f<6;f++){
+      body+=`<button class="floor" onclick="go('floor${f}')">
+        ${t("Level","ወለል")} ${f} →
+      </button>`;
+    }
+  }
+
+  if(page.startsWith("floor") && page!=="floors"){
+    let f=Number(page.slice(5));
+    body+=`<h2>${t("Level","ወለል")} ${f}</h2>`;
+    let names=f===0?["G-01","G-02"]:[f+"01"];
+    names.forEach((name,i)=>{
+      let occupied=f===0&&i===0;
+      body+=`<div class="card">
+        <h2>${name} · ${f===0?t("Shop","ሱቅ"):t("Office","ቢሮ")}</h2>
+        <p>${occupied?"Sample Trading":t("Vacant","ክፍት")}</p>
+        ${occupied?`<button class="action" onclick="go('lease')">
+          ${t("View lease","ውሉን ይመልከቱ")}
+        </button>`:""}
+      </div>`;
+    });
+  }
+
+  if(page==="lease"){
+    body+=`
+    <h2>${t("Lease details","የውል ዝርዝሮች")}</h2>
+    <div class="card">
+      <h2>Sample Trading</h2>
+      <p>${t("Level 0 · Shop G-01","ወለል 0 · ሱቅ G-01")}</p>
+      <small>${t("Six-month total","የስድስት ወራት ጠቅላላ")}</small>
+      <div class="number">ETB 120,000</div>
+      <p>${t("Payable in one installment, not monthly.",
+             "በአንድ ጊዜ የሚከፈል፣ ወርሃዊ አይደለም።")}</p>
+      <p>${t("Example due date","የማሳያ ክፍያ ቀን")}<br>
+         6 November 2026 GC<br>27 Tikimt 2019 EC</p>
+      <p>${paid?t("Paid","ተከፍሏል"):
+                    t("Awaiting payment","ክፍያ በመጠባበቅ ላይ")}</p>
+      <button class="action" onclick="paid=true;render()">
+        ${t("Try recording full payment","ሙሉ ክፍያ መመዝገብ ይሞክሩ")}
+      </button>
+    </div>`;
+  }
+
+  if(page==="payments"){
+    body+=`
+    <h2>${t("Payments","ክፍያዎች")}</h2>
+    <div class="card">
+      <h2>Sample Trading · G-01</h2>
+      <p>ETB 120,000</p>
+      <p>${paid?t("Payment recorded — demo only",
+                   "ክፍያ ተመዝግቧል — ማሳያ ብቻ"):
+                 t("Awaiting payment","ክፍያ በመጠባበቅ ላይ")}</p>
+      <button class="action" onclick="go('lease')">
+        ${t("Open lease","ውሉን ክፈት")}
+      </button>
+    </div>`;
+  }
+
+  document.getElementById("content").innerHTML=body;
+  document.getElementById("nav").innerHTML=`
+    <button onclick="go('home')">${t("Home","መነሻ")}</button>
+    <button onclick="go('floors')">${t("Floors","ወለሎች")}</button>
+    <button onclick="go('payments')">${t("Payments","ክፍያዎች")}</button>`;
+}
+render();
+</script>
+</body>
+</html>
